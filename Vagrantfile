@@ -104,4 +104,40 @@ Vagrant.configure("2") do |config|
       systemctl status apache2
     SHELL
   end
+
+  config.vm.define "web" do |web|
+    web.vm.provider "virtualbox" do |vb|
+      vb.name = "https-lab-4-web"
+      vb.memory = "256"
+    end
+
+    web.vm.hostname = "www.izv.ies"
+    web.vm.network :private_network, ip: "192.168.56.102", hostname: true
+    web.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y apache2
+
+      cp -v /vagrant/config/izv/apache2.conf /etc/apache2
+
+      # TODO: Configurar sitio virtual
+      cp -v -r /vagrant/config/izv/www.izv.ies.conf /etc/apache2/sites-available
+
+      # Copiar los recursos de nuestra web al Document Root
+        
+      cp -v -r /vagrant/config/izv/ /var/www/
+
+      # Habilitar/deshabilitar sitios virtuales      
+      
+      a2dissite 000-default.conf
+      a2ensite www.izv.ies.conf
+
+      # Habilitar módulos necesarios
+
+      a2enmod rewrite
+
+
+      systemctl restart apache2
+      systemctl status apache2
+    SHELL
+  end
 end
